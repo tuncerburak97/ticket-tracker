@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 	"ticket-tracker/config"
 	"ticket-tracker/internal/domain"
+	"ticket-tracker/pkg/logger"
 	"time"
 )
 
@@ -40,7 +40,7 @@ func InitDb() error {
 		return err
 	}
 
-	log.Println("Db connection established")
+	logger.Logger.Info("Connected to Postgres")
 	return nil
 }
 func AutoMigrate() error {

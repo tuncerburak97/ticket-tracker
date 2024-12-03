@@ -39,7 +39,10 @@ func (r *ticketRequestRepository) Create(ticketRequest *domain.TicketRequest) er
 }
 func (r *ticketRequestRepository) FindAll() ([]domain.TicketRequest, error) {
 	var ticketRequests []domain.TicketRequest
-	if err := r.db.Find(&ticketRequests).Error; err != nil {
+	if err := r.db.
+		Order("created_at desc").
+		Find(&ticketRequests).
+		Error; err != nil {
 		return nil, err
 	}
 	return ticketRequests, nil
@@ -48,7 +51,8 @@ func (r *ticketRequestRepository) FindAll() ([]domain.TicketRequest, error) {
 func (r *ticketRequestRepository) FindById(id string) (ticketRequest *domain.TicketRequest, err error) {
 	var ticketRequestResponse domain.TicketRequest
 
-	if err := r.db.Take(&ticketRequestResponse, "id = ?", id).Error; err != nil {
+	if err := r.db.
+		Take(&ticketRequestResponse, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &ticketRequestResponse, nil
@@ -56,7 +60,9 @@ func (r *ticketRequestRepository) FindById(id string) (ticketRequest *domain.Tic
 
 func (r *ticketRequestRepository) FindByStatus(status string) ([]domain.TicketRequest, error) {
 	var ticketRequests []domain.TicketRequest
-	if err := r.db.Find(&ticketRequests, "status = ?", status).Error; err != nil {
+	if err := r.db.
+		Order("created_at desc").
+		Find(&ticketRequests, "status = ?", status).Error; err != nil {
 		return nil, err
 	}
 	return ticketRequests, nil
@@ -68,7 +74,9 @@ func (r *ticketRequestRepository) Update(ticketRequest *domain.TicketRequest) er
 
 func (r *ticketRequestRepository) FindByMail(mail string) ([]domain.TicketRequest, error) {
 	var ticketRequests []domain.TicketRequest
-	if err := r.db.Find(&ticketRequests, "email = ?", mail).Error; err != nil {
+	if err := r.db.
+		Order("created_at desc").
+		Find(&ticketRequests, "email = ?", mail).Error; err != nil {
 		return nil, err
 	}
 	return ticketRequests, nil
@@ -76,7 +84,9 @@ func (r *ticketRequestRepository) FindByMail(mail string) ([]domain.TicketReques
 
 func (r *ticketRequestRepository) FindByMailAndStatus(mail, status string) ([]domain.TicketRequest, error) {
 	var ticketRequests []domain.TicketRequest
-	if err := r.db.Find(&ticketRequests, "email = ? AND status = ?", mail, status).Error; err != nil {
+	if err := r.db.
+		Order("created_at desc").
+		Find(&ticketRequests, "email = ? AND status = ?", mail, status).Error; err != nil {
 		return nil, err
 	}
 	return ticketRequests, nil

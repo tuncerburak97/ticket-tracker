@@ -1,8 +1,8 @@
 package tcdd
 
 import (
-	"ticket-tracker/internal/api_clients/tcdd/model/request"
-	"ticket-tracker/internal/api_clients/tcdd/model/response"
+	"ticket-tracker/internal/client/tcdd/model/request"
+	"ticket-tracker/internal/client/tcdd/model/response"
 )
 
 type Interface interface {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	http2 "net/http"
-	"ticket-tracker/internal/api_clients/tcdd/model/request"
-	"ticket-tracker/internal/api_clients/tcdd/model/response"
+	"ticket-tracker/internal/client/tcdd/model/request"
+	"ticket-tracker/internal/client/tcdd/model/response"
 	"ticket-tracker/pkg/http"
 )
 

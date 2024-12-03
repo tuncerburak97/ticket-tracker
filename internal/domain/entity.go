@@ -24,7 +24,7 @@ type TicketRequest struct {
 }
 
 func (entity TicketRequest) TableName() string {
-	return "tcdd"
+	return "ticket_requests"
 }
 
 func (entity *TicketRequest) BeforeCreate(tx *gorm.DB) (err error) {

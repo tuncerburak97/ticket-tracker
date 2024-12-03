@@ -3,10 +3,13 @@ package logger
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	_ "os"
 )
 
 var Logger *logrus.Logger
+
+func GetLogger() *logrus.Logger {
+	return Logger
+}
 
 func init() {
 	Logger = logrus.New()
@@ -19,7 +22,8 @@ func init() {
 	Logger.SetLevel(level)
 
 	Logger.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05", // Daha okunabilir format
 	})
 }
 
@@ -41,6 +45,13 @@ func ConfigureLogger(logFile string, logLevel string, jsonFormat bool) {
 	}
 
 	if jsonFormat {
-		Logger.SetFormatter(&logrus.JSONFormatter{})
+		Logger.SetFormatter(&logrus.JSONFormatter{
+			TimestampFormat: "2006-01-02 15:04:05", // JSON formatında da uygulanıyor
+		})
+	} else {
+		Logger.SetFormatter(&logrus.TextFormatter{
+			FullTimestamp:   true,
+			TimestampFormat: "2006-01-02 15:04:05", // Daha okunabilir format
+		})
 	}
 }

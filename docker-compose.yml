@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  ticket-tracker:
+    image: tuncerburak/ticket-tracker
+    container_name: ticket-tracker
+    ports:
+      - "8080:8080"

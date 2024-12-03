@@ -17,6 +17,7 @@ func Init() error {
 
 	app.Static("/", "./static")
 	router.RegisterRoutes(app)
+
 	err := app.Listen(":" + "8080")
 	if err != nil {
 		return err

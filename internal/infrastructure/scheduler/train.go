@@ -2,18 +2,20 @@ package scheduler
 
 import (
 	"fmt"
-	"log"
+	"github.com/sirupsen/logrus"
 	"strconv"
+	"strings"
 	"sync"
-	"ticket-tracker/internal/api_clients/notification/mail"
-	"ticket-tracker/internal/api_clients/notification/mail/model"
-	"ticket-tracker/internal/api_clients/tcdd"
-	"ticket-tracker/internal/api_clients/tcdd/model/common"
-	"ticket-tracker/internal/api_clients/tcdd/model/request"
-	apiModelRequest "ticket-tracker/internal/api_clients/tcdd/model/request"
-	"ticket-tracker/internal/api_clients/tcdd/model/response"
+	"ticket-tracker/internal/client/notification/mail"
+	"ticket-tracker/internal/client/notification/mail/model"
+	"ticket-tracker/internal/client/tcdd"
+	"ticket-tracker/internal/client/tcdd/model/common"
+	"ticket-tracker/internal/client/tcdd/model/request"
+	apiModelRequest "ticket-tracker/internal/client/tcdd/model/request"
+	"ticket-tracker/internal/client/tcdd/model/response"
 	"ticket-tracker/internal/domain"
 	"ticket-tracker/internal/domain/ticket_request"
+	"ticket-tracker/pkg/logger"
 	"time"
 )
 
@@ -24,6 +26,7 @@ type TrainScheduler struct {
 	once                sync.Once
 	mu                  sync.Mutex
 	isZeroRequestLogged bool
+	log                 *logrus.Logger
 }
 
 var trainSchedulerInstance *TrainScheduler
@@ -45,6 +48,7 @@ func NewTrainScheduler(tcddClient *tcdd.HttpClient,
 	return &TrainScheduler{
 		tcddClient: tcddClient,
 		mailClient: mailClient,
+		log:        logger.GetLogger(),
 	}
 }
 
@@ -69,12 +73,12 @@ func (ts *TrainScheduler) Run() {
 	var ticketRequestRepository = ticket_request.GetRepository()
 	var pendingRequests, err = ticketRequestRepository.FindByStatus("PENDING")
 	if err != nil {
-		log.Printf("Error getting pending requests: %v", err)
+		ts.log.Error("Error getting pending requests: ", err)
 		return
 	}
 
 	if len(pendingRequests) == 0 && !ts.isZeroRequestLogged {
-		log.Printf("No pending request found")
+		ts.log.Info("No pending requests found")
 		ts.isZeroRequestLogged = true
 		return
 	}
@@ -83,10 +87,10 @@ func (ts *TrainScheduler) Run() {
 		return
 	}
 
-	log.Printf("Running train scheduler with %d requests", len(pendingRequests))
+	ts.log.Info("Running scheduler with pending requests: ", len(pendingRequests))
 
 	if _, err := ts.getStations(); err != nil {
-		log.Printf("Error getting stations: %v", err)
+		ts.log.Error("Error getting stations: ", err)
 		return
 	}
 	var foundedRequestIDList = make([]string, 0)
@@ -134,13 +138,13 @@ func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestI
 		Criteria:    criteria,
 	})
 	if err != nil {
-		log.Printf("Error searching trip: %v", err)
+		ts.log.Error("Error searching trip: ", err)
 		return
 	}
 
 	b := search.TripSearchResponseInfo.ResponseCode != "000"
 	if b {
-		log.Printf("Error searching trip: %v", search.TripSearchResponseInfo.ResponseMsg)
+		ts.log.Error("Error searching trip: ", search.TripSearchResponseInfo.ResponseMsg)
 		return
 	}
 	remainingDisabledNumber, found := ts.findTrip(search, request.TourID)
@@ -166,7 +170,7 @@ func (ts *TrainScheduler) handleFoundTrip(request domain.TicketRequest, remainin
 		ArrivalStID:   int(request.ArrivalStationID),
 	})
 	if err != nil {
-		log.Printf("Error getting empty place: %v", err)
+		ts.log.Error("Error searching empty place: ", err)
 		return
 	}
 
@@ -180,16 +184,14 @@ func (ts *TrainScheduler) handleFoundTrip(request domain.TicketRequest, remainin
 		departureValidation := true
 		departureDateFormat, err := time.Parse("Jan 02, 2006 03:04:05 PM", request.DepartureDate)
 		if err != nil {
-			fmt.Println("Departure date parse edilemedi:", err)
-			fmt.Println("Departure Date:", request.DepartureDate)
+			ts.log.Error("Departure Date parse edilemedi:", err)
 			departureValidation = false
 		}
 
 		arrivalValidation := true
 		arrivalDateFormat, err := time.Parse("Jan 02, 2006 03:04:05 PM", request.ArrivalDate)
 		if err != nil {
-			fmt.Println("Arrival Date parse edilemedi:", err)
-			fmt.Println("Arrival Date:", request.ArrivalDate)
+			ts.log.Error("Arrival Date parse edilemedi:", err)
 			arrivalValidation = false
 		}
 
@@ -208,14 +210,15 @@ func (ts *TrainScheduler) handleFoundTrip(request domain.TicketRequest, remainin
 			arrivalDateStr = request.ArrivalDate
 		}
 
-		log.Printf("Found trip for request: %s and email: %s date: %s from: %s to: %s",
-			request.ID,
-			request.Email,
-			request.DepartureDate,
-			request.DepartureStation,
-			request.ArrivalStation)
+		ts.log.WithFields(logrus.Fields{
+			"ID":    request.ID,
+			"Email": request.Email,
+			"Date":  request.DepartureDate,
+			"From":  request.DepartureStation,
+			"To":    request.ArrivalStation,
+		}).Info("Found trip for request")
 
-		sendEmail(
+		ts.sendEmail(
 			request.Email,
 			availablePlace,
 			departureDateStr,
@@ -257,11 +260,11 @@ func (ts *TrainScheduler) processWagonRequest(
 
 	locationSelectionWagonResponse, err := ts.tcddClient.LocationSelectionWagon(locationSelectionWagonRequest)
 	if err != nil {
-		log.Printf("Error selecting wagon: %v", err)
+		ts.log.Error("Error selecting wagon: ", err)
 		return nil
 	}
 	if locationSelectionWagonResponse.ResponseInfo.ResponseCode != "000" {
-		log.Printf("Error selecting wagon: %v", locationSelectionWagonResponse.ResponseInfo.ResponseMsg)
+		ts.log.Error("Error selecting wagon: ", locationSelectionWagonResponse.ResponseInfo.ResponseMsg)
 		return nil
 	}
 	for _, locationSelectionWagon := range locationSelectionWagonResponse.LocationSelectionWagonResponseData.SeatInformationList {
@@ -279,11 +282,11 @@ func (ts *TrainScheduler) processWagonRequest(
 			}
 			checkSeatResponse, err := ts.tcddClient.CheckSeat(checkSeatRequest)
 			if err != nil {
-				log.Printf("Error reserving seat: %v", err)
+				ts.log.Error("Error reserving seat: ", err)
 				return nil
 			}
 			if checkSeatResponse.ResponseInfo.ResponseCode != "000" {
-				log.Printf("Error reserving seat: %v", checkSeatResponse.ResponseInfo.ResponseMsg)
+				ts.log.Error("Error reserving seat: ", checkSeatResponse.ResponseInfo.ResponseMsg)
 				return nil
 			}
 
@@ -302,20 +305,21 @@ func (ts *TrainScheduler) processWagonRequest(
 
 			reserveSeatResponse, err := ts.tcddClient.ReserveSeat(reserveSeatRequest)
 			if err != nil {
-				log.Printf("Error reserving seat: %v", err)
+				ts.log.Error("Error reserving seat: ", err)
 				return nil
 			}
 			if reserveSeatResponse.ResponseInfo.ResponseCode != "000" {
-				log.Printf("Error reserving seat: %v", reserveSeatResponse.ResponseInfo.ResponseMsg)
+				ts.log.Error("Error reserving seat: ", reserveSeatResponse.ResponseInfo.ResponseMsg)
 				return nil
 			}
 
-			log.Printf("Seat reserved for request: %s, Email: %s, Date: %s, From: %s, To: %s",
-				request.ID,
-				request.Email,
-				request.DepartureDate,
-				request.DepartureStation,
-				request.ArrivalStation)
+			ts.log.WithFields(logrus.Fields{
+				"ID":    request.ID,
+				"Email": request.Email,
+				"Date":  request.DepartureDate,
+				"From":  request.DepartureStation,
+				"To":    request.ArrivalStation,
+			}).Info("Seat reserved for request")
 
 			reservedSeats = append(reservedSeats, common.ReserveSeatDetail{
 				SeatNo:       locationSelectionWagon.SeatNo,
@@ -347,7 +351,7 @@ func calculateTotalEmptyPlace(emptyPlaceList []response.EmptyPlace) int {
 	return totalEmptyPlace
 }
 
-func sendEmail(recipient string,
+func (ts *TrainScheduler) sendEmail(recipient string,
 	availablePlace int,
 	departureDate string,
 	arrivalDate string,
@@ -412,6 +416,11 @@ tr:nth-child(even) {
 `, availablePlace, departureDate, arrivalDate, departureStation, arrivalStation)
 
 		for _, seat := range reservedSeats {
+
+			if strings.Contains(seat.SeatNo, "h") {
+				continue
+			}
+
 			body += fmt.Sprintf(`
   <tr>
     <td>%d</td>
@@ -438,9 +447,9 @@ tr:nth-child(even) {
 		// Send the email
 		err := trainSchedulerInstance.mailClient.SendEmail(email)
 		if err != nil {
-			fmt.Println("Error sending email:", err)
+			ts.log.Error("Error sending email: ", err)
 		}
-		log.Printf("Email sent to: %s", recipient)
+
 	}
 }
 
@@ -455,7 +464,7 @@ func (ts *TrainScheduler) UpdateTicketRequestStatusToFound(foundedRequests []dom
 		request.TotalAttempt = totalAttempt + 1
 		err := ticketRequestRepository.Update(&request)
 		if err != nil {
-			log.Printf("Error updating ticket request status to found: %v", err)
+			ts.log.Error("Error updating ticket request: ", err)
 		}
 	}
 }
@@ -525,7 +534,8 @@ func (ts *TrainScheduler) handleNotFoundTrip(request domain.TicketRequest) (requ
 	var ticketRequestRepository = ticket_request.GetRepository()
 	err := ticketRequestRepository.Update(&request)
 	if err != nil {
-		log.Printf("Error updating ticket request: %v", err)
+		ts.log.Error("Error updating ticket request: ", err)
+		return ""
 	}
 
 	return ""

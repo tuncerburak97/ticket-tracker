@@ -2,7 +2,7 @@ package mail
 
 import (
 	"net/smtp"
-	"ticket-tracker/internal/api_clients/notification/mail/model"
+	"ticket-tracker/internal/client/notification/mail/model"
 )
 
 type MailClientInterface interface {
