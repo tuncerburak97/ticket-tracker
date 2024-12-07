@@ -15,16 +15,17 @@ type TicketRequest struct {
 	ArrivalDate         string `gorm:"column:arrival_date"`
 	ArrivalStationID    int64  `gorm:"column:arrival_station_id"`
 	ArrivalStation      string `gorm:"column:arrival_station"`
-	TourID              int64  `gorm:"column:tour_id"`
 	TrainID             int64  `gorm:"column:train_id"`
 	Email               string `gorm:"column:email"`
 	IsEmailNotification bool   `gorm:"column:is_email_notification"`
 	Status              string `gorm:"column:status"`
 	TotalAttempt        int    `gorm:"column:total_attempt"`
+	Gender              string `gorm:"column:gender"`
+	TourID              int64  `gorm:"column:tour_id"`
 }
 
 func (entity TicketRequest) TableName() string {
-	return "ticket_requests"
+	return "ticket_request"
 }
 
 func (entity *TicketRequest) BeforeCreate(tx *gorm.DB) (err error) {

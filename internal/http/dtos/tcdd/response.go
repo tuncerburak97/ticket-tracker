@@ -6,8 +6,6 @@ type QueryTrainResponse struct {
 type QueryTrainResponseDetail struct {
 	TrainID            int64      `json:"trainID"`
 	TrainName          string     `json:"trainName"`
-	TrainCode          string     `json:"trainCode"`
-	TourID             int64      `json:"tourID"`
 	DepartureDate      string     `json:"departureDate"`
 	ArrivalDate        string     `json:"arrivalDate"`
 	EmptyPlace         EmptyPlace `json:"emptyPlace"`
@@ -15,6 +13,8 @@ type QueryTrainResponseDetail struct {
 	DepartureStation   string     `json:"departureStation"`
 	DepartureStationID int64      `json:"departureStationID"`
 	ArrivalStationID   int64      `json:"arrivalStationID"`
+	TotalTripTime      string     `json:"totalTripTime"`
+	MinPrice           float64    `json:"minPrice"`
 }
 
 type EmptyPlace struct {

@@ -1,19 +1,21 @@
-package tcdd
+package v1
 
 import (
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/gofiber/fiber/v2"
-	"ticket-tracker/internal/domain/tcdd"
+	"ticket-tracker/internal/domain/tcdd/v1"
+	v2 "ticket-tracker/internal/domain/tcdd/v2"
 	model "ticket-tracker/internal/http/dtos/tcdd"
 	"ticket-tracker/pkg/utils/http"
 )
 
 type Handler struct {
-	s *tcdd.TccdService
+	s  *v1.TccdService
+	s2 *v2.TcddServiceV2
 }
 
 func NewHandler() *Handler {
-	return &Handler{s: tcdd.NewService()}
+	return &Handler{s: v1.NewService(), s2: v2.NewService()}
 }
 
 func (h *Handler) AddSearchRequest(c *fiber.Ctx) error {

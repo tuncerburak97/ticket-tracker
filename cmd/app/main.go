@@ -7,7 +7,7 @@ import (
 	"sync"
 	"ticket-tracker/config"
 	"ticket-tracker/internal/http"
-	scheduler2 "ticket-tracker/internal/infrastructure/scheduler"
+	v2 "ticket-tracker/internal/infrastructure/scheduler/v2"
 	"ticket-tracker/pkg/db"
 	"ticket-tracker/pkg/logger"
 	"time"
@@ -44,7 +44,7 @@ func runServer(wg *sync.WaitGroup) {
 
 func runScheduler(wg *sync.WaitGroup) {
 	defer wg.Done()
-	scheduler := scheduler2.GetTrainSchedulerInstance()
+	scheduler := v2.GetTrainSchedulerInstance()
 	err := gocron.Every(15).Seconds().Do(scheduler.Run)
 	if err != nil {
 		fmt.Printf("Scheduler error: %v\n", err)

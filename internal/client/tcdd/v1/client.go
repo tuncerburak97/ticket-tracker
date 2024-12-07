@@ -1,11 +1,11 @@
-package tcdd
+package v1
 
 import (
 	"encoding/json"
 	"log"
 	http2 "net/http"
-	"ticket-tracker/internal/client/tcdd/model/request"
-	"ticket-tracker/internal/client/tcdd/model/response"
+	request2 "ticket-tracker/internal/client/tcdd/v1/model/request"
+	response2 "ticket-tracker/internal/client/tcdd/v1/model/response"
 	"ticket-tracker/pkg/http"
 )
 
@@ -25,7 +25,7 @@ func NewTcddHttpClient() *HttpClient {
 	return &HttpClient{}
 }
 
-func (c *HttpClient) LoadAllStation(loadRequest request.StationLoadRequest) (*response.StationLoadResponse, error) {
+func (c *HttpClient) LoadAllStation(loadRequest request2.StationLoadRequest) (*response2.StationLoadResponse, error) {
 
 	httpClientInstance := http.GetHttpClientInstance()
 
@@ -35,7 +35,7 @@ func (c *HttpClient) LoadAllStation(loadRequest request.StationLoadRequest) (*re
 		Body:    loadRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var stationLoadResponse response.StationLoadResponse
+	var stationLoadResponse response2.StationLoadResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][LoadAllStation]: %v\n", err)
@@ -46,7 +46,7 @@ func (c *HttpClient) LoadAllStation(loadRequest request.StationLoadRequest) (*re
 	return &stationLoadResponse, nil
 }
 
-func (c *HttpClient) TripSearch(tripSearchRequest request.TripSearchRequest) (*response.TripSearchResponse, error) {
+func (c *HttpClient) TripSearch(tripSearchRequest request2.TripSearchRequest) (*response2.TripSearchResponse, error) {
 
 	httpClientInstance := http.GetHttpClientInstance()
 
@@ -56,7 +56,7 @@ func (c *HttpClient) TripSearch(tripSearchRequest request.TripSearchRequest) (*r
 		Body:    tripSearchRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var tripSearchResponse response.TripSearchResponse
+	var tripSearchResponse response2.TripSearchResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][TripSearch]: %v\n", err)
@@ -66,7 +66,7 @@ func (c *HttpClient) TripSearch(tripSearchRequest request.TripSearchRequest) (*r
 	return &tripSearchResponse, nil
 }
 
-func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest request.StationEmptyPlaceSearchRequest) (*response.StationEmptyPlaceSearchResponse, error) {
+func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest request2.StationEmptyPlaceSearchRequest) (*response2.StationEmptyPlaceSearchResponse, error) {
 
 	httpClientInstance := http.GetHttpClientInstance()
 
@@ -76,7 +76,7 @@ func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest requ
 		Body:    stationEmptyPlaceSearchRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var stationEmptyPlaceSearchResponse response.StationEmptyPlaceSearchResponse
+	var stationEmptyPlaceSearchResponse response2.StationEmptyPlaceSearchResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][StationEmptyPlaceSearch]: %v\n", err)
@@ -86,7 +86,7 @@ func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest requ
 	return &stationEmptyPlaceSearchResponse, nil
 }
 
-func (c *HttpClient) CheckSeat(reserveSeatRequest request.CheckSeatRequest) (*response.CheckSeatResponse, error) {
+func (c *HttpClient) CheckSeat(reserveSeatRequest request2.CheckSeatRequest) (*response2.CheckSeatResponse, error) {
 	httpClientInstance := http.GetHttpClientInstance()
 
 	httpRequest := http.Request{
@@ -95,7 +95,7 @@ func (c *HttpClient) CheckSeat(reserveSeatRequest request.CheckSeatRequest) (*re
 		Body:    reserveSeatRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var reserveSeatResponse response.CheckSeatResponse
+	var reserveSeatResponse response2.CheckSeatResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][CheckSeat]: %v\n", err)
@@ -105,7 +105,7 @@ func (c *HttpClient) CheckSeat(reserveSeatRequest request.CheckSeatRequest) (*re
 	return &reserveSeatResponse, nil
 }
 
-func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest request.LocationSelectionWagonRequest) (*response.LocationSelectionWagonResponse, error) {
+func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest request2.LocationSelectionWagonRequest) (*response2.LocationSelectionWagonResponse, error) {
 	httpClientInstance := http.GetHttpClientInstance()
 
 	httpRequest := http.Request{
@@ -114,7 +114,7 @@ func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest reques
 		Body:    locationSelectionWagonRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var locationSelectionWagonResponse response.LocationSelectionWagonResponse
+	var locationSelectionWagonResponse response2.LocationSelectionWagonResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][LocationSelectionWagon]: %v\n", err)
@@ -125,7 +125,7 @@ func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest reques
 
 }
 
-func (c *HttpClient) ReserveSeat(reserveSeatRequest request.ReserveSeatRequest) (*response.ReserveSeatResponse, error) {
+func (c *HttpClient) ReserveSeat(reserveSeatRequest request2.ReserveSeatRequest) (*response2.ReserveSeatResponse, error) {
 	httpClientInstance := http.GetHttpClientInstance()
 
 	httpRequest := http.Request{
@@ -134,7 +134,7 @@ func (c *HttpClient) ReserveSeat(reserveSeatRequest request.ReserveSeatRequest) 
 		Body:    reserveSeatRequest,
 		Headers: map[string]interface{}{"Content-Type": "application/json", "Authorization": "Basic ZGl0cmF2b3llYnNwOmRpdHJhMzQhdm8u"},
 	}
-	var reserveSeatResponse response.ReserveSeatResponse
+	var reserveSeatResponse response2.ReserveSeatResponse
 	resp, err := httpClientInstance.SendHttpRequest(httpRequest)
 	if err != nil {
 		log.Printf("error [tcdd_client][ReserveSeat]: %v\n", err)

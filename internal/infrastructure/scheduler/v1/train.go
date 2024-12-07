@@ -1,4 +1,4 @@
-package scheduler
+package v1
 
 import (
 	"fmt"
@@ -8,11 +8,10 @@ import (
 	"sync"
 	"ticket-tracker/internal/client/notification/mail"
 	"ticket-tracker/internal/client/notification/mail/model"
-	"ticket-tracker/internal/client/tcdd"
-	"ticket-tracker/internal/client/tcdd/model/common"
-	"ticket-tracker/internal/client/tcdd/model/request"
-	apiModelRequest "ticket-tracker/internal/client/tcdd/model/request"
-	"ticket-tracker/internal/client/tcdd/model/response"
+	"ticket-tracker/internal/client/tcdd/v1"
+	"ticket-tracker/internal/client/tcdd/v1/model/common"
+	request2 "ticket-tracker/internal/client/tcdd/v1/model/request"
+	response2 "ticket-tracker/internal/client/tcdd/v1/model/response"
 	"ticket-tracker/internal/domain"
 	"ticket-tracker/internal/domain/ticket_request"
 	"ticket-tracker/pkg/logger"
@@ -20,9 +19,9 @@ import (
 )
 
 type TrainScheduler struct {
-	tcddClient          *tcdd.HttpClient
+	tcddClient          *v1.HttpClient
 	mailClient          *mail.MailHttpClient
-	stations            *response.StationLoadResponse
+	stations            *response2.StationLoadResponse
 	once                sync.Once
 	mu                  sync.Mutex
 	isZeroRequestLogged bool
@@ -33,7 +32,7 @@ var trainSchedulerInstance *TrainScheduler
 
 func GetTrainSchedulerInstance() *TrainScheduler {
 	if trainSchedulerInstance == nil {
-		trainSchedulerInstance = NewTrainScheduler(tcdd.GetTcddHttpClientInstance(),
+		trainSchedulerInstance = NewTrainScheduler(v1.GetTcddHttpClientInstance(),
 			mail.GetMailHttpClientInstance())
 		trainSchedulerInstance.isZeroRequestLogged = false
 	}
@@ -41,7 +40,7 @@ func GetTrainSchedulerInstance() *TrainScheduler {
 
 }
 
-func NewTrainScheduler(tcddClient *tcdd.HttpClient,
+func NewTrainScheduler(tcddClient *v1.HttpClient,
 	mailClient *mail.MailHttpClient,
 
 ) *TrainScheduler {
@@ -52,10 +51,10 @@ func NewTrainScheduler(tcddClient *tcdd.HttpClient,
 	}
 }
 
-func (ts *TrainScheduler) getStations() (*response.StationLoadResponse, error) {
+func (ts *TrainScheduler) getStations() (*response2.StationLoadResponse, error) {
 	var err error
 	ts.once.Do(func() {
-		stationLoadRequest := request.StationLoadRequest{
+		stationLoadRequest := request2.StationLoadRequest{
 			Language:    0,
 			ChannelCode: "3",
 			Date:        "Nov 10, 2011 12:00:00 AM",
@@ -116,7 +115,7 @@ func (ts *TrainScheduler) Run() {
 
 func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestID string) {
 
-	criteria := apiModelRequest.Criteria{
+	criteria := request2.Criteria{
 		SalesChannel:       3,
 		DepartureStation:   request.DepartureStation,
 		IsMapDeparture:     false,
@@ -132,7 +131,7 @@ func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestI
 		TravelType:         1,
 	}
 
-	search, err := ts.tcddClient.TripSearch(apiModelRequest.TripSearchRequest{
+	search, err := ts.tcddClient.TripSearch(request2.TripSearchRequest{
 		ChannelCode: 3,
 		Language:    0,
 		Criteria:    criteria,
@@ -162,7 +161,7 @@ func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestI
 }
 func (ts *TrainScheduler) handleFoundTrip(request domain.TicketRequest, remainingDisabledNumber int, arrivalDate string) (requestID string) {
 
-	placeSearch, err := ts.tcddClient.StationEmptyPlaceSearch(apiModelRequest.StationEmptyPlaceSearchRequest{
+	placeSearch, err := ts.tcddClient.StationEmptyPlaceSearch(request2.StationEmptyPlaceSearchRequest{
 		ChannelCode:   "3",
 		Language:      0,
 		TourTitleID:   request.TourID,
@@ -233,7 +232,7 @@ func (ts *TrainScheduler) handleFoundTrip(request domain.TicketRequest, remainin
 }
 
 func (ts *TrainScheduler) reserveSeat(
-	locationSelectionWagonRequestList []apiModelRequest.LocationSelectionWagonRequest,
+	locationSelectionWagonRequestList []request2.LocationSelectionWagonRequest,
 	request domain.TicketRequest,
 ) []common.ReserveSeatDetail {
 
@@ -251,7 +250,7 @@ func (ts *TrainScheduler) reserveSeat(
 }
 
 func (ts *TrainScheduler) processWagonRequest(
-	locationSelectionWagonRequest apiModelRequest.LocationSelectionWagonRequest,
+	locationSelectionWagonRequest request2.LocationSelectionWagonRequest,
 	request domain.TicketRequest,
 	totalReservedSeat *int,
 ) []common.ReserveSeatDetail {
@@ -273,7 +272,7 @@ func (ts *TrainScheduler) processWagonRequest(
 				break
 			}
 
-			checkSeatRequest := apiModelRequest.CheckSeatRequest{
+			checkSeatRequest := request2.CheckSeatRequest{
 				ChannelCode:             "3",
 				Language:                0,
 				SelectedSeatWagonNumber: locationSelectionWagon.WagonOrderNo,
@@ -290,7 +289,7 @@ func (ts *TrainScheduler) processWagonRequest(
 				return nil
 			}
 
-			reserveSeatRequest := apiModelRequest.ReserveSeatRequest{
+			reserveSeatRequest := request2.ReserveSeatRequest{
 				ChannelCode:        "3",
 				Language:           0,
 				TourID:             int(request.TourID),
@@ -332,7 +331,7 @@ func (ts *TrainScheduler) processWagonRequest(
 	return reservedSeats
 }
 
-func (ts *TrainScheduler) findTrip(search *response.TripSearchResponse, tourID int64) (int64, bool) {
+func (ts *TrainScheduler) findTrip(search *response2.TripSearchResponse, tourID int64) (int64, bool) {
 	for _, trip := range search.SearchResult {
 		if trip.TourID == tourID {
 			if len(trip.WagonTypesEmptyPlace) > 0 {
@@ -343,7 +342,7 @@ func (ts *TrainScheduler) findTrip(search *response.TripSearchResponse, tourID i
 	return 0, false
 }
 
-func calculateTotalEmptyPlace(emptyPlaceList []response.EmptyPlace) int {
+func calculateTotalEmptyPlace(emptyPlaceList []response2.EmptyPlace) int {
 	totalEmptyPlace := 0
 	for _, emptyPlace := range emptyPlaceList {
 		totalEmptyPlace += emptyPlace.EmptyPlace
@@ -469,11 +468,11 @@ func (ts *TrainScheduler) UpdateTicketRequestStatusToFound(foundedRequests []dom
 	}
 }
 
-func getLocationSelectionWagonRequestList(emptyPlaceList []response.EmptyPlace, request domain.TicketRequest) []apiModelRequest.LocationSelectionWagonRequest {
-	response := make([]apiModelRequest.LocationSelectionWagonRequest, 0)
+func getLocationSelectionWagonRequestList(emptyPlaceList []response2.EmptyPlace, request domain.TicketRequest) []request2.LocationSelectionWagonRequest {
+	response := make([]request2.LocationSelectionWagonRequest, 0)
 	for _, emptyPlace := range emptyPlaceList {
 		if emptyPlace.EmptyPlace > 0 {
-			response = append(response, apiModelRequest.LocationSelectionWagonRequest{
+			response = append(response, request2.LocationSelectionWagonRequest{
 				ChannelCode:          "3",
 				Language:             0,
 				TourTitleID:          strconv.FormatInt(request.TourID, 10),

@@ -13,4 +13,5 @@ type RetrieveTicketRequest struct {
 	Email            string    `json:"email"`
 	Status           string    `json:"status"`
 	TotalAttempt     int       `json:"total_attempt"`
+	Gender           string    `json:"gender"`
 }

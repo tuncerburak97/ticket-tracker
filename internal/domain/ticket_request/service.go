@@ -47,6 +47,7 @@ func (service *Service) FindById(id string) (apiResponse.RetrieveTicketRequest, 
 		Email:            entity.Email,
 		Status:           entity.Status,
 		TotalAttempt:     entity.TotalAttempt,
+		Gender:           entity.Gender,
 	}
 
 	return dto, nil

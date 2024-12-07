@@ -1,11 +1,11 @@
 package model
 
 type QueryTrainRequest struct {
-	DepartureStationID   int64  `json:"binisIstasyonId"`
-	DepartureStationName string `json:"binisIstasyon"`
-	ArrivalStationID     int64  `json:"inisIstasyonId"`
-	ArrivalStationName   string `json:"inisIstasyonu"`
-	DepartureDate        string `json:"gidisTarih"`
+	DepartureStationID   int64  `json:"departureStationID"`
+	DepartureStationName string `json:"departureStation"`
+	ArrivalStationID     int64  `json:"arrivalStationID"`
+	ArrivalStationName   string `json:"arrivalStation"`
+	DepartureDate        string `json:"departureDate"`
 }
 
 type SearchTrainRequest struct {
@@ -14,13 +14,14 @@ type SearchTrainRequest struct {
 
 type SearchTrainRequestDetail struct {
 	RequestID           string              `json:"requestID"`
-	DepartureDate       string              `json:"gidisTarih"`
-	DepartureStationID  int64               `json:"binisIstasyonId"`
-	ArrivalStationID    int64               `json:"inisIstasyonId"`
-	ArrivalDate         string              `json:"inisTarih"`
+	DepartureDate       string              `json:"departureDate"`
+	DepartureStationID  int64               `json:"departureStationID"`
+	ArrivalStationID    int64               `json:"arrivalStationID"`
+	ArrivalDate         string              `json:"arrivalDate"`
 	TourID              int64               `json:"tourID"`
 	TrainID             int64               `json:"trainID"`
 	Email               string              `json:"email"`
+	Gender              string              `json:"gender"`
 	IsEmailNotification bool                `json:"emailNotification"`
 	ExternalInformation ExternalInformation `json:"externalInformation"`
 }

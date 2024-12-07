@@ -3,7 +3,8 @@ package router
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
-	tcddRouter "ticket-tracker/internal/http/router/tcdd"
+	tcddRouterV1 "ticket-tracker/internal/http/router/tcdd/v1"
+	tcddRouterV2 "ticket-tracker/internal/http/router/tcdd/v2"
 	tickerRequestRouter "ticket-tracker/internal/http/router/ticket_request"
 )
 
@@ -13,7 +14,11 @@ func RegisterRoutes(app *fiber.App) {
 
 	//tcdd
 	tcdd := app.Group("/tcdd")
-	tcddRouter.Router(tcdd)
+	tcddRouterV1.Router(tcdd)
+
+	//tcdd v2
+	tcddV2 := app.Group("v2/tcdd")
+	tcddRouterV2.Router(tcddV2)
 
 	// ticket-request
 	ticketRequest := app.Group("/ticket-request")

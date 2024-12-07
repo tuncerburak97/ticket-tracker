@@ -1,4 +1,4 @@
-package tcdd
+package v1
 
 import (
 	"errors"
@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"sort"
 	"sync"
-	"ticket-tracker/internal/client/tcdd"
-	tccdClientRequest "ticket-tracker/internal/client/tcdd/model/request"
-	tccdClientResponse "ticket-tracker/internal/client/tcdd/model/response"
+	"ticket-tracker/internal/client/tcdd/v1"
+	"ticket-tracker/internal/client/tcdd/v1/model/request"
+	"ticket-tracker/internal/client/tcdd/v1/model/response"
 	"ticket-tracker/internal/domain"
 	"ticket-tracker/internal/domain/ticket_request"
 	apiModel "ticket-tracker/internal/http/dtos/tcdd"
@@ -17,13 +17,13 @@ import (
 )
 
 type TccdService struct {
-	tcddClient *tcdd.HttpClient
-	stations   *tccdClientResponse.StationLoadResponse
-	once       sync.Once
+	tcddClientV1 *v1.HttpClient
+	stations     *response.StationLoadResponse
+	once         sync.Once
 }
 
 type TccdServiceInterface interface {
-	GetStations() (*tccdClientResponse.StationLoadResponse, error)
+	GetStations() (*response.StationLoadResponse, error)
 	LoadStations() (*apiModel.StationInformation, error)
 	AddSearchRequest(request *apiModel.SearchTrainRequest) (*apiModel.SearchTrainResponse, error)
 	QueryTrain(request *apiModel.QueryTrainRequest) (*apiModel.QueryTrainResponse, error)
@@ -31,20 +31,20 @@ type TccdServiceInterface interface {
 
 func NewService() *TccdService {
 	return &TccdService{
-		tcddClient: tcdd.GetTcddHttpClientInstance(),
+		tcddClientV1: v1.GetTcddHttpClientInstance(),
 	}
 }
 
-func (ts *TccdService) GetStations() (*tccdClientResponse.StationLoadResponse, error) {
+func (ts *TccdService) GetStations() (*response.StationLoadResponse, error) {
 	var err error
 	ts.once.Do(func() {
-		stationLoadRequest := tccdClientRequest.StationLoadRequest{
+		stationLoadRequest := request.StationLoadRequest{
 			Language:    0,
 			ChannelCode: "3",
 			Date:        "Nov 10, 2011 12:00:00 AM",
 			SalesQuery:  true,
 		}
-		ts.stations, err = ts.tcddClient.LoadAllStation(stationLoadRequest)
+		ts.stations, err = ts.tcddClientV1.LoadAllStation(stationLoadRequest)
 	})
 	return ts.stations, err
 }
@@ -171,6 +171,7 @@ func (ts *TccdService) AddSearchRequest(requests *apiModel.SearchTrainRequest) (
 				TrainID:             request.TrainID,
 				Email:               request.Email,
 				IsEmailNotification: request.IsEmailNotification,
+				Gender:              request.Gender,
 				Status:              "PENDING",
 				TotalAttempt:        0,
 			}
@@ -190,59 +191,9 @@ func (ts *TccdService) AddSearchRequest(requests *apiModel.SearchTrainRequest) (
 }
 
 func (ts *TccdService) QueryTrain(request *apiModel.QueryTrainRequest) (*apiModel.QueryTrainResponse, error) {
-	criteria := tccdClientRequest.Criteria{
-		SalesChannel:       3,
-		DepartureStation:   request.DepartureStationName,
-		IsMapDeparture:     false,
-		ArrivalStation:     request.ArrivalStationName,
-		IsMapArrival:       false,
-		DepartureDate:      request.DepartureDate,
-		IsRegional:         false,
-		OperationType:      0,
-		PassengerCount:     1,
-		IsTransfer:         true,
-		DepartureStationID: request.DepartureStationID,
-		ArrivalStationID:   request.ArrivalStationID,
-		TravelType:         1,
-	}
-
-	tripSearchResponse, err := ts.tcddClient.TripSearch(tccdClientRequest.TripSearchRequest{
-		ChannelCode: 3,
-		Language:    0,
-		Criteria:    criteria,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error querying train: %v", err)
-	}
-
-	var wg sync.WaitGroup
-	detailsChan := make(chan apiModel.QueryTrainResponseDetail)
-	errChan := make(chan error, len(tripSearchResponse.SearchResult))
-
-	for _, trip := range tripSearchResponse.SearchResult {
-		wg.Add(1)
-		go ts.processTripSearchResult(&wg, detailsChan, errChan, trip, request, tripSearchResponse)
-	}
-
-	go func() {
-		wg.Wait()
-		close(detailsChan)
-		close(errChan)
-	}()
-
-	var details []apiModel.QueryTrainResponseDetail
-	for detail := range detailsChan {
-		details = append(details, detail)
-	}
-
-	if len(errChan) > 0 {
-		return nil, <-errChan
-	}
-
-	orderByArrivalDate(details)
 
 	return &apiModel.QueryTrainResponse{
-		Details: details,
+		nil,
 	}, nil
 }
 
@@ -258,53 +209,21 @@ func (ts *TccdService) processTripSearchResult(
 	wg *sync.WaitGroup,
 	detailsChan chan<- apiModel.QueryTrainResponseDetail,
 	errChan chan<- error,
-	trip tccdClientResponse.SearchResult,
+	trip response.SearchResult,
 	request *apiModel.QueryTrainRequest,
-	tripSearchResponse *tccdClientResponse.TripSearchResponse,
+	tripSearchResponse *response.TripSearchResponse,
 ) {
-	defer wg.Done()
 
-	remainingDisabledNumber, _ := findTrip(tripSearchResponse, trip.TourID)
-	placeSearch, err := ts.tcddClient.StationEmptyPlaceSearch(tccdClientRequest.StationEmptyPlaceSearchRequest{
-		ChannelCode:   "3",
-		Language:      0,
-		TourTitleID:   trip.TourID,
-		DepartureStID: request.DepartureStationID,
-		ArrivalStID:   int(request.ArrivalStationID),
-	})
-	if err != nil {
-		errChan <- fmt.Errorf("error getting empty place: %v", err)
-		return
-	}
-
-	totalEmptyPlace := calculateTotalEmptyPlace(placeSearch.EmptyPlaceList)
-	detailsChan <- apiModel.QueryTrainResponseDetail{
-		TrainID:            trip.TrainID,
-		TrainName:          trip.TrainName,
-		TrainCode:          trip.TrainCode,
-		TourID:             trip.TourID,
-		DepartureDate:      trip.DepartureDate,
-		ArrivalDate:        trip.ArrivalDate,
-		ArrivalStation:     trip.ArrivalStation,
-		DepartureStation:   trip.DepartureStation,
-		ArrivalStationID:   trip.ArrivalStationID,
-		DepartureStationID: trip.DepartureStationID,
-		EmptyPlace: apiModel.EmptyPlace{
-			DisabledPlaceCount:          remainingDisabledNumber,
-			TotalEmptyPlaceCount:        int64(totalEmptyPlace),
-			NormalPeopleEmptyPlaceCount: int64(totalEmptyPlace) - remainingDisabledNumber,
-		},
-	}
 }
 
-func calculateTotalEmptyPlace(emptyPlaceList []tccdClientResponse.EmptyPlace) int {
+func calculateTotalEmptyPlace(emptyPlaceList []response.EmptyPlace) int {
 	totalEmptyPlace := 0
 	for _, emptyPlace := range emptyPlaceList {
 		totalEmptyPlace += emptyPlace.EmptyPlace
 	}
 	return totalEmptyPlace
 }
-func findTrip(search *tccdClientResponse.TripSearchResponse, tourID int64) (int64, bool) {
+func findTrip(search *response.TripSearchResponse, tourID int64) (int64, bool) {
 	for _, trip := range search.SearchResult {
 		if trip.TourID == tourID {
 			if len(trip.WagonTypesEmptyPlace) > 0 {
@@ -321,7 +240,7 @@ func validateEmail(email string) bool {
 	validationResult := regexp.MustCompile(emailRegex).MatchString(email)
 	return validationResult
 }
-func GetStationByStationID(stations []tccdClientResponse.StationInformation, stationID int64) (*tccdClientResponse.StationInformation, error) {
+func GetStationByStationID(stations []response.StationInformation, stationID int64) (*response.StationInformation, error) {
 	for _, station := range stations {
 		if station.StationID == stationID {
 			return &station, nil
@@ -330,7 +249,7 @@ func GetStationByStationID(stations []tccdClientResponse.StationInformation, sta
 	return nil, fmt.Errorf("no station found with ID: %v", stationID)
 }
 
-func checkStationIDIsValid(stationID int64, stations []tccdClientResponse.StationInformation) bool {
+func checkStationIDIsValid(stationID int64, stations []response.StationInformation) bool {
 	for _, station := range stations {
 		if station.StationID == stationID {
 			return true
