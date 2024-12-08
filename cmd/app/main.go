@@ -45,6 +45,10 @@ func runServer(wg *sync.WaitGroup) {
 func runScheduler(wg *sync.WaitGroup) {
 	defer wg.Done()
 	scheduler := v2.GetTrainSchedulerInstance()
+	_, loadStationErr := scheduler.GetStationsOnce()
+	if loadStationErr != nil {
+		logger.Logger.Errorf("Station load error: %v", loadStationErr)
+	}
 	err := gocron.Every(15).Seconds().Do(scheduler.Run)
 	if err != nil {
 		fmt.Printf("Scheduler error: %v\n", err)

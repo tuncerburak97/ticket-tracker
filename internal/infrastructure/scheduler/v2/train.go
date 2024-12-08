@@ -50,7 +50,7 @@ func NewTrainScheduler(tcddClient *v2.HttpClient,
 	}
 }
 
-func (ts *TrainScheduler) getStationsOnce() ([]response.StationLoadResponse, error) {
+func (ts *TrainScheduler) GetStationsOnce() ([]response.StationLoadResponse, error) {
 	var err error
 	ts.once.Do(func() {
 		ts.stations, err = ts.tcddClient.LoadAllStations()
@@ -81,7 +81,7 @@ func (ts *TrainScheduler) Run() {
 
 	ts.log.Info("Running scheduler with pending requests: ", len(pendingRequests))
 
-	if _, err := ts.getStationsOnce(); err != nil {
+	if _, err := ts.GetStationsOnce(); err != nil {
 		ts.log.Error("Error getting stations: ", err)
 		return
 	}
