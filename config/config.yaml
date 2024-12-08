@@ -3,7 +3,7 @@ server:
   externalPort: 8080
 
 postgres:
-  host: 172.31.29.191
+  host: 54.221.36.126
   port: 5432
   user: postgres
   password: postgres
