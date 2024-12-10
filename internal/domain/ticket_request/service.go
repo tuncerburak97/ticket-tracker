@@ -1,6 +1,6 @@
 package ticket_request
 
-import apiResponse "ticket-tracker/internal/http/dtos/ticket_request"
+import apiResponse "ticket-tracker/internal/controller/dtos/ticket_request"
 
 type Service struct {
 	ticketRequestRepository Repository

@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"ticket-tracker/internal/http/handler/tcdd/v1"
+	"ticket-tracker/internal/controller/handler/tcdd/v1"
 )
 
 func Router(router fiber.Router) {

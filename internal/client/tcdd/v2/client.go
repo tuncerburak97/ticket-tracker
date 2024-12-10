@@ -6,13 +6,13 @@ import (
 	http2 "net/http"
 	"ticket-tracker/internal/client/tcdd/v2/model/request"
 	"ticket-tracker/internal/client/tcdd/v2/model/response"
-	"ticket-tracker/pkg/http"
 	"ticket-tracker/pkg/logger"
+	"ticket-tracker/pkg/rest"
 )
 
 type HttpClient struct {
 	log        *logrus.Logger
-	restClient *http.Client
+	restClient *rest.Client
 }
 
 var httpClientInstance *HttpClient
@@ -29,14 +29,14 @@ func GetTcddHttpClientInstance() *HttpClient {
 func NewTcddHttpClient() *HttpClient {
 	return &HttpClient{
 		log:        logger.GetLogger(),
-		restClient: http.GetRestClient(),
+		restClient: rest.GetRestClient(),
 	}
 }
 
 func (s *HttpClient) LoadAllStations() (*[]response.StationLoadResponse, error) {
 
 	httpClientInstance := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodGet,
 		URL:     "https://cdn-api-prod-ytp.tcddtasimacilik.gov.tr/datas/station-pairs-INTERNET.json?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": authHeader},
@@ -60,7 +60,7 @@ func (s *HttpClient) LoadAllStations() (*[]response.StationLoadResponse, error) 
 
 func (s *HttpClient) TrainAvailability(req *request.TrainAvailabilityRequest) (*response.TrainAvailabilityResponse, error) {
 	httpClientInstance := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://gise-api-prod-ytp.tcddtasimacilik.gov.tr/tms/train/train-availability?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": authHeader},
@@ -85,7 +85,7 @@ func (s *HttpClient) TrainAvailability(req *request.TrainAvailabilityRequest) (*
 
 func (s *HttpClient) SeatMapByTrain(request *request.SeatMapByTrainRequest) (*response.SeatMapByTrainRequestResponse, error) {
 	client := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://gise-api-prod-ytp.tcddtasimacilik.gov.tr/tms/seat-maps/load-by-train-id?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": giseAuthHeader},
@@ -111,7 +111,7 @@ func (s *HttpClient) SeatMapByTrain(request *request.SeatMapByTrainRequest) (*re
 
 func (s *HttpClient) SelectSeat(request *request.SelectSeatRequest) (*response.SelectSeatResponse, error) {
 	client := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://gise-api-prod-ytp.tcddtasimacilik.gov.tr/tms/inventory/select-seat?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": giseAuthHeader},
@@ -136,7 +136,7 @@ func (s *HttpClient) SelectSeat(request *request.SelectSeatRequest) (*response.S
 
 func (s *HttpClient) CreatePnr(request *request.CreatePnrRequest) (*response.CreatePnrResponse, error) {
 	client := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://web-api-prod-ytp.tcddtasimacilik.gov.tr/crs/rail-booking/create-pnr?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": giseAuthHeader},
@@ -161,7 +161,7 @@ func (s *HttpClient) CreatePnr(request *request.CreatePnrRequest) (*response.Cre
 
 func (s *HttpClient) VerifyIdentityNumber(request *request.VerifyIdentityNumberRequest) (bool, error) {
 	client := s.restClient
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://web-api-prod-ytp.tcddtasimacilik.gov.tr/pex/pex/verify/tckimlik?environment=dev&userId=1",
 		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": giseAuthHeader},

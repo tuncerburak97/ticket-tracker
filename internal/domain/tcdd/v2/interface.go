@@ -1,6 +1,6 @@
 package v2
 
-import apiModel "ticket-tracker/internal/http/dtos/tcdd"
+import apiModel "ticket-tracker/internal/controller/dtos/tcdd"
 
 type TccServiceInterfaceV2 interface {
 	LoadAllStationV2() (*apiModel.StationInformation, error)

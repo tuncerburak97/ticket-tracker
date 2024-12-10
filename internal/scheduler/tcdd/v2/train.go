@@ -78,6 +78,7 @@ func (ts *TrainScheduler) Run() {
 	if len(pendingRequests) == 0 {
 		return
 	}
+	ts.isZeroRequestLogged = false
 
 	ts.log.Info("Running scheduler with pending requests: ", len(pendingRequests))
 

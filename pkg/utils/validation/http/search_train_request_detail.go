@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 	"regexp"
-	model "ticket-tracker/internal/http/dtos/tcdd"
+	model "ticket-tracker/internal/controller/dtos/tcdd"
 	"time"
 )
 

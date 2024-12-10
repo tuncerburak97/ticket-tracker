@@ -6,10 +6,10 @@ import (
 	"os"
 	"sync"
 	"ticket-tracker/config"
-	"ticket-tracker/internal/http"
-	v2 "ticket-tracker/internal/infrastructure/scheduler/v2"
+	"ticket-tracker/internal/scheduler/tcdd/v2"
 	"ticket-tracker/pkg/db"
 	"ticket-tracker/pkg/logger"
+	"ticket-tracker/pkg/server"
 	"time"
 )
 
@@ -36,7 +36,7 @@ func runServer(wg *sync.WaitGroup) {
 		os.Exit(1)
 	}
 	logger.Logger.Info("Server is starting...")
-	if err := http.Init(); err != nil {
+	if err := server.Init(); err != nil {
 		fmt.Printf("Server initialization error: %v\n", err)
 		os.Exit(1)
 	}

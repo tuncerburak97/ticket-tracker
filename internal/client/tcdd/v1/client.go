@@ -6,7 +6,7 @@ import (
 	http2 "net/http"
 	request2 "ticket-tracker/internal/client/tcdd/v1/model/request"
 	response2 "ticket-tracker/internal/client/tcdd/v1/model/response"
-	"ticket-tracker/pkg/http"
+	"ticket-tracker/pkg/rest"
 )
 
 type HttpClient struct {
@@ -27,9 +27,9 @@ func NewTcddHttpClient() *HttpClient {
 
 func (c *HttpClient) LoadAllStation(loadRequest request2.StationLoadRequest) (*response2.StationLoadResponse, error) {
 
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/istasyon/istasyonYukle",
 		Body:    loadRequest,
@@ -48,9 +48,9 @@ func (c *HttpClient) LoadAllStation(loadRequest request2.StationLoadRequest) (*r
 
 func (c *HttpClient) TripSearch(tripSearchRequest request2.TripSearchRequest) (*response2.TripSearchResponse, error) {
 
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/sefer/seferSorgula",
 		Body:    tripSearchRequest,
@@ -68,9 +68,9 @@ func (c *HttpClient) TripSearch(tripSearchRequest request2.TripSearchRequest) (*
 
 func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest request2.StationEmptyPlaceSearchRequest) (*response2.StationEmptyPlaceSearchResponse, error) {
 
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/vagon/vagonBosYerSorgula",
 		Body:    stationEmptyPlaceSearchRequest,
@@ -87,9 +87,9 @@ func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest requ
 }
 
 func (c *HttpClient) CheckSeat(reserveSeatRequest request2.CheckSeatRequest) (*response2.CheckSeatResponse, error) {
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/koltuk/klCheck",
 		Body:    reserveSeatRequest,
@@ -106,9 +106,9 @@ func (c *HttpClient) CheckSeat(reserveSeatRequest request2.CheckSeatRequest) (*r
 }
 
 func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest request2.LocationSelectionWagonRequest) (*response2.LocationSelectionWagonResponse, error) {
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/vagon/vagonHaritasindanYerSecimi",
 		Body:    locationSelectionWagonRequest,
@@ -126,9 +126,9 @@ func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest reques
 }
 
 func (c *HttpClient) ReserveSeat(reserveSeatRequest request2.ReserveSeatRequest) (*response2.ReserveSeatResponse, error) {
-	httpClientInstance := http.GetRestClient()
+	httpClientInstance := rest.GetRestClient()
 
-	httpRequest := http.Request{
+	httpRequest := rest.Request{
 		Method:  http2.MethodPost,
 		URL:     "https://api-yebsp.tcddtasimacilik.gov.tr/koltuk/klSec",
 		Body:    reserveSeatRequest,

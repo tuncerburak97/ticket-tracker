@@ -10,9 +10,9 @@ import (
 	"ticket-tracker/internal/client/tcdd/v1"
 	"ticket-tracker/internal/client/tcdd/v1/model/request"
 	"ticket-tracker/internal/client/tcdd/v1/model/response"
+	apiModel "ticket-tracker/internal/controller/dtos/tcdd"
 	"ticket-tracker/internal/domain"
 	"ticket-tracker/internal/domain/ticket_request"
-	apiModel "ticket-tracker/internal/http/dtos/tcdd"
 	"time"
 )
 

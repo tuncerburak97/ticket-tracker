@@ -1,6 +1,6 @@
 package model
 
-import model "ticket-tracker/internal/http/dtos/tcdd"
+import model "ticket-tracker/internal/controller/dtos/tcdd"
 
 type NewTicketRequest struct {
 	Id                 string                   `json:"id"`

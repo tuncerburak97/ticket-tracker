@@ -2,7 +2,7 @@ package ticket_request
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"ticket-tracker/internal/http/handler/ticket_request"
+	"ticket-tracker/internal/controller/handler/ticket_request"
 )
 
 func Router(router fiber.Router) {

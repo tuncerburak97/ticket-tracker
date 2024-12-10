@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
-	tcddRouterV2 "ticket-tracker/internal/http/router/tcdd/v2"
-	tickerRequestRouter "ticket-tracker/internal/http/router/ticket_request"
+	tcddRouterV2 "ticket-tracker/internal/controller/router/tcdd/v2"
+	tickerRequestRouter "ticket-tracker/internal/controller/router/ticket_request"
 )
 
 func RegisterRoutes(app *fiber.App) {

@@ -1,9 +1,10 @@
-package http
+package server
 
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"ticket-tracker/internal/http/router"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
+	"ticket-tracker/internal/controller/router"
 )
 
 func Init() error {
@@ -17,6 +18,7 @@ func Init() error {
 
 	app.Static("/", "./static")
 	router.RegisterRoutes(app)
+	app.Get("/metrics", monitor.New())
 
 	err := app.Listen(":" + "8080")
 	if err != nil {

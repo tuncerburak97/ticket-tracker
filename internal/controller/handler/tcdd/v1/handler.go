@@ -3,9 +3,9 @@ package v1
 import (
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/gofiber/fiber/v2"
+	model "ticket-tracker/internal/controller/dtos/tcdd"
 	"ticket-tracker/internal/domain/tcdd/v1"
 	v2 "ticket-tracker/internal/domain/tcdd/v2"
-	model "ticket-tracker/internal/http/dtos/tcdd"
 	"ticket-tracker/pkg/utils/http"
 )
 
