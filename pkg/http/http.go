@@ -25,7 +25,7 @@ var (
 	instance *Client
 )
 
-func GetHttpClientInstance() *Client {
+func GetRestClient() *Client {
 	once.Do(func() {
 		instance = &Client{
 			client: &http.Client{},

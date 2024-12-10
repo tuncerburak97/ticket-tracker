@@ -27,7 +27,7 @@ func NewTcddHttpClient() *HttpClient {
 
 func (c *HttpClient) LoadAllStation(loadRequest request2.StationLoadRequest) (*response2.StationLoadResponse, error) {
 
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,
@@ -48,7 +48,7 @@ func (c *HttpClient) LoadAllStation(loadRequest request2.StationLoadRequest) (*r
 
 func (c *HttpClient) TripSearch(tripSearchRequest request2.TripSearchRequest) (*response2.TripSearchResponse, error) {
 
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,
@@ -68,7 +68,7 @@ func (c *HttpClient) TripSearch(tripSearchRequest request2.TripSearchRequest) (*
 
 func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest request2.StationEmptyPlaceSearchRequest) (*response2.StationEmptyPlaceSearchResponse, error) {
 
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,
@@ -87,7 +87,7 @@ func (c *HttpClient) StationEmptyPlaceSearch(stationEmptyPlaceSearchRequest requ
 }
 
 func (c *HttpClient) CheckSeat(reserveSeatRequest request2.CheckSeatRequest) (*response2.CheckSeatResponse, error) {
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,
@@ -106,7 +106,7 @@ func (c *HttpClient) CheckSeat(reserveSeatRequest request2.CheckSeatRequest) (*r
 }
 
 func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest request2.LocationSelectionWagonRequest) (*response2.LocationSelectionWagonResponse, error) {
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,
@@ -126,7 +126,7 @@ func (c *HttpClient) LocationSelectionWagon(locationSelectionWagonRequest reques
 }
 
 func (c *HttpClient) ReserveSeat(reserveSeatRequest request2.ReserveSeatRequest) (*response2.ReserveSeatResponse, error) {
-	httpClientInstance := http.GetHttpClientInstance()
+	httpClientInstance := http.GetRestClient()
 
 	httpRequest := http.Request{
 		Method:  http2.MethodPost,

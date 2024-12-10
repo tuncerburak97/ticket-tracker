@@ -125,7 +125,7 @@ func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestI
 	for _, seatMap := range seatMapByTrainID.SeatMaps {
 		unAllocatedSeats := findUnallocatedSeatsByTrainCar(seatMap.SeatMapTemplate.SeatMaps, seatMap.AllocationSeats)
 		if len(unAllocatedSeats) > 0 {
-			reservedSeat, err := ts.makeReservation(request, unAllocatedSeats, seatMap)
+			reservedSeat, createdPnr, err := ts.makeReservation(request, unAllocatedSeats, seatMap)
 			if err != nil {
 				return ""
 			}
@@ -142,6 +142,7 @@ func (ts *TrainScheduler) processRequest(request domain.TicketRequest) (requestI
 					},
 				},
 				unAllocatedSeats[0].Item.Name,
+				createdPnr,
 			)
 			found = true
 			break // Exit the loop once an unallocated seat is found and handled
@@ -171,7 +172,7 @@ func (ts *TrainScheduler) handleNotAllocated(entity domain.TicketRequest) {
 	}
 }
 
-func (ts *TrainScheduler) makeReservation(entity domain.TicketRequest, seatMap []response.SeatMap, seatMapObject response.SeatMapObject) (string, error) {
+func (ts *TrainScheduler) makeReservation(entity domain.TicketRequest, seatMap []response.SeatMap, seatMapObject response.SeatMapObject) (string, string, error) {
 	reservedSeat := seatMap[0].SeatNumber
 	selectSeatRequest := request2.SelectSeatRequest{
 		TrainCarID:          seatMapObject.TrainCarID,
@@ -184,12 +185,51 @@ func (ts *TrainScheduler) makeReservation(entity domain.TicketRequest, seatMap [
 		TotalPassengerCount: 1,
 	}
 
-	_, err := ts.tcddClient.SelectSeat(&selectSeatRequest)
+	selectSeatResponse, err := ts.tcddClient.SelectSeat(&selectSeatRequest)
 	if err != nil {
 		ts.log.Error("Error selecting seat: ", err)
-		return "", err
+		return "", "", err
 	}
-	return reservedSeat, nil
+
+	Tr := request2.SeatSelection{
+		TrainCarId:             int64(seatMapObject.TrainCarID),
+		SeatNumber:             reservedSeat,
+		FromStationId:          int64(int(entity.DepartureStationID)),
+		ToStationId:            int64(int(entity.ArrivalStationID)),
+		LockForDate:            int64(selectSeatResponse.LockFor),
+		SelectedBookingClassId: 1,
+		SelectedFareFamilyId:   1,
+		SelectedCabinClassId:   2,
+	}
+
+	passenger := request2.Passenger{
+		Name:                            entity.Name,
+		LastName:                        entity.LastName,
+		BirthDate:                       entity.BirthDate,
+		Contact:                         false,
+		PhoneCountryCode:                "90",
+		PhoneAreaCode:                   entity.Phone[0:3],
+		PhoneNumber:                     entity.Phone[3:],
+		Email:                           entity.Email,
+		CountryId:                       1,
+		IdentityNumber:                  entity.IdentityNumber,
+		LoyaltyNumber:                   "",
+		GDPR:                            false,
+		PassengerMultiLegSeatSelections: [][]request2.SeatSelection{{Tr}},
+	}
+
+	createPnrResponse, err := ts.tcddClient.CreatePnr(&request2.CreatePnrRequest{
+		AllocationId:   selectSeatResponse.AllocationID,
+		PreReservation: false,
+		Passengers:     []request2.Passenger{passenger},
+	})
+
+	if err != nil {
+		ts.log.Error("Error creating PNR: ", err)
+		return reservedSeat, "", err
+
+	}
+	return reservedSeat, createPnrResponse.Locator, nil
 
 }
 
@@ -199,7 +239,8 @@ func (ts *TrainScheduler) sendReservationMail(recipient string,
 	departureStation string,
 	arrivalStation string,
 	reservedSeats []common.ReserveSeatDetail,
-	seatItem string) {
+	seatItem string,
+	pnrNumber string) {
 
 	{
 		body := fmt.Sprintf(`
@@ -237,6 +278,7 @@ tr:nth-child(even) {
     <th>Kalkış İstasyonu</th>
     <th>Varış İstasyonu</th>
 	<th>Koltuk Tipi</th>
+	<th>Rezervasyon Numarası</th>
   </tr>
   <tr>
     <td>%s</td>
@@ -244,17 +286,18 @@ tr:nth-child(even) {
     <td>%s</td>
     <td>%s</td>
 	<td>%s</td>
+	<td>%s</td>
   </tr>
 </table>
 
 <div class="margin-top">
-<p>Sizin için aşağıdaki koltuklar rezerv edilmiştir. 10 dakika boyunca koltuk diğer kullanıcılar için görünür olmayacaktır. Bu maili aldıktan 10 dakika sonra koltuk kilidi kalkmış olacaktır. İlgili koltuğu 10 dakika sonra kontrol edebilirsiniz!</p>
+<p>Sizin için aşağıdaki koltuklar rezerv edilmiştir. 10 dakika boyunca koltuk diğer kullanıcılar için görünür olmayacaktır. Bu maili aldıktan itibaren 10 dakika içinde https://ebilet.tcddtasimacilik.gov.tr/ adresinden yukarıdaki Rezervasyon numarası ile Biletlerim sekmesinden ödeme adımına geçebilirsiniz.</p>
 <table>
   <tr>
     <th>Vagon No</th>
     <th>Koltuk No</th>
   </tr>
-`, departureDate, arrivalDate, departureStation, arrivalStation, seatItem)
+`, departureDate, arrivalDate, departureStation, arrivalStation, seatItem, pnrNumber)
 
 		for _, seat := range reservedSeats {
 

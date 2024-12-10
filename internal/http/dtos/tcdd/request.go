@@ -20,10 +20,15 @@ type SearchTrainRequestDetail struct {
 	ArrivalDate         string              `json:"arrivalDate"`
 	TourID              int64               `json:"tourID"`
 	TrainID             int64               `json:"trainID"`
-	Email               string              `json:"email"`
-	Gender              string              `json:"gender"`
 	IsEmailNotification bool                `json:"emailNotification"`
 	ExternalInformation ExternalInformation `json:"externalInformation"`
+	Gender              string              `json:"gender"`
+	Name                string              `json:"name"`
+	LastName            string              `json:"lastName"`
+	Phone               string              `json:"phone"`
+	Email               string              `json:"email"`
+	BirthDate           string              `json:"birthDate"`
+	IdentityNumber      string              `json:"identityNumber"`
 }
 
 type ExternalInformation struct {

@@ -10,8 +10,8 @@ type RetrieveTicketRequest struct {
 	DepartureDate    string    `json:"departure_date"`
 	ArrivalStation   string    `json:"arrival_station"`
 	ArrivalDate      string    `json:"arrival_date"`
-	Email            string    `json:"email"`
 	Status           string    `json:"status"`
 	TotalAttempt     int       `json:"total_attempt"`
 	Gender           string    `json:"gender"`
+	Email            string    `json:"email"`
 }
