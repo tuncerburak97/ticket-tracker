@@ -72,6 +72,7 @@ func (service *Service) FindAll() ([]apiResponse.RetrieveTicketRequest, error) {
 			Email:            entity.Email,
 			Status:           entity.Status,
 			TotalAttempt:     entity.TotalAttempt,
+			Gender:           entity.Gender,
 		}
 		dtoList = append(dtoList, dto)
 	}
@@ -98,6 +99,7 @@ func (service *Service) FindByMail(mail string) ([]apiResponse.RetrieveTicketReq
 			Email:            entity.Email,
 			Status:           entity.Status,
 			TotalAttempt:     entity.TotalAttempt,
+			Gender:           entity.Gender,
 		}
 		dtoList = append(dtoList, dto)
 	}
@@ -124,6 +126,7 @@ func (service *Service) FindByStatus(status string) ([]apiResponse.RetrieveTicke
 			Email:            entity.Email,
 			Status:           entity.Status,
 			TotalAttempt:     entity.TotalAttempt,
+			Gender:           entity.Gender,
 		}
 		dtoList = append(dtoList, dto)
 	}
@@ -150,6 +153,7 @@ func (service *Service) FindByMailAndStatus(mail, status string) ([]apiResponse.
 			Email:            entity.Email,
 			Status:           entity.Status,
 			TotalAttempt:     entity.TotalAttempt,
+			Gender:           entity.Gender,
 		}
 		dtoList = append(dtoList, dto)
 	}
