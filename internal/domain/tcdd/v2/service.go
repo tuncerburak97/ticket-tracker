@@ -16,6 +16,7 @@ import (
 	"ticket-tracker/internal/domain/ticket_request"
 	apiModel "ticket-tracker/internal/http/dtos/tcdd"
 	"ticket-tracker/pkg/logger"
+	"ticket-tracker/pkg/utils/validation/http"
 	"time"
 )
 
@@ -119,18 +120,14 @@ func (ts *TcddServiceV2) QueryTrainV2(request *apiModel.QueryTrainRequest) (*api
 }
 
 func (ts *TcddServiceV2) AddSearchRequest(requests *apiModel.SearchTrainRequest) (*apiModel.SearchTrainResponse, error) {
-	for _, request := range requests.Request {
-		departureDate, err := time.Parse("2006-01-02 15:04:05", request.DepartureDate)
-		if err != nil {
-			return nil, errors.New("invalid departure date format")
-		}
-		if time.Now().After(departureDate) {
-			return nil, errors.New("past departure date")
-		}
 
-		if !validateEmail(request.Email) {
-			return nil, errors.New("invalid email format")
-		}
+	err := http.ValidateRequest(requests)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	for _, request := range requests.Request {
+
 		if stations, err := ts.LoadAllStationV2(); err != nil {
 			return nil, fmt.Errorf("error getting stations: %v", err)
 		} else {
@@ -138,7 +135,6 @@ func (ts *TcddServiceV2) AddSearchRequest(requests *apiModel.SearchTrainRequest)
 			if !checkStationIDIsValid(request.DepartureStationID, stations.Response) || !checkStationIDIsValid(request.ArrivalStationID, stations.Response) {
 				return nil, errors.New("invalid arrival or departure station id")
 			}
-
 			departureStation, err := GetStationByStationID(stations.Response, request.DepartureStationID)
 			if err != nil {
 				return nil, fmt.Errorf("error getting departure station: %v", err)
