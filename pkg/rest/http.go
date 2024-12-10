@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"sync"
-	"time"
 )
 
 type Request struct {
@@ -29,17 +28,14 @@ var (
 
 func GetRestClient() *Client {
 	once.Do(func() {
-		tr := &http.Transport{
+		_ = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				MinVersion: tls.VersionTLS12,
 				MaxVersion: tls.VersionTLS12,
 			},
 		}
 		instance = &Client{
-			client: &http.Client{
-				Timeout:   10 * time.Second,
-				Transport: tr,
-			},
+			client: &http.Client{},
 		}
 	})
 	return instance
