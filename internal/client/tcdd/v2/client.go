@@ -158,3 +158,28 @@ func (s *HttpClient) CreatePnr(request *request.CreatePnrRequest) (*response.Cre
 
 	return &trainAvailabilityResponse, nil
 }
+
+func (s *HttpClient) VerifyIdentityNumber(request *request.VerifyIdentityNumberRequest) (bool, error) {
+	client := s.restClient
+	httpRequest := http.Request{
+		Method:  http2.MethodPost,
+		URL:     "https://web-api-prod-ytp.tcddtasimacilik.gov.tr/pex/pex/verify/tckimlik?environment=dev&userId=1",
+		Headers: map[string]interface{}{"Unit-Id": "3895", "Content-Type": "application/json", "Authorization": giseAuthHeader},
+		Body:    request,
+	}
+
+	resp, clientError := client.SendHttpRequest(httpRequest)
+	if clientError != nil {
+		s.log.Errorf("error [tcdd_client][VerifyIdentityNumber]: %v\n", clientError)
+		return false, clientError
+	}
+	var result bool
+	unMarshalError := json.Unmarshal(resp, &result)
+	if unMarshalError != nil {
+		s.log.Errorf("error [tcdd_client][VerifyIdentityNumber]: %v\n", unMarshalError)
+		return false, unMarshalError
+	}
+
+	return result, nil
+
+}

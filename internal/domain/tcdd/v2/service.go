@@ -160,6 +160,20 @@ func (ts *TcddServiceV2) AddSearchRequest(requests *apiModel.SearchTrainRequest)
 				return nil, err
 			}
 
+			validIdentityNo, err := ts.tccdClientV2.VerifyIdentityNumber(
+				&request2.VerifyIdentityNumberRequest{
+					IdentityNumber: request.IdentityNumber,
+					Name:           request.Name,
+					LastName:       request.LastName,
+					BirthDate:      request.BirthDate[:4],
+				})
+			if err != nil {
+				return nil, fmt.Errorf("error verifying identity number: %v", err)
+			}
+			if !validIdentityNo {
+				return nil, errors.New("invalid identity number")
+			}
+
 			uuidWithHyphen := uuid.New()
 			ticketRequestEntity := domain.TicketRequest{
 				ID:                  uuidWithHyphen.String(),
