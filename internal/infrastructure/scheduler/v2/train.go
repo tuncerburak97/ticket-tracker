@@ -20,7 +20,7 @@ import (
 type TrainScheduler struct {
 	tcddClient          *v2.HttpClient
 	mailClient          *mail.MailHttpClient
-	stations            []response.StationLoadResponse
+	stations            *[]response.StationLoadResponse
 	once                sync.Once
 	mu                  sync.Mutex
 	isZeroRequestLogged bool
@@ -50,7 +50,7 @@ func NewTrainScheduler(tcddClient *v2.HttpClient,
 	}
 }
 
-func (ts *TrainScheduler) GetStationsOnce() ([]response.StationLoadResponse, error) {
+func (ts *TrainScheduler) GetStationsOnce() (*[]response.StationLoadResponse, error) {
 	var err error
 	ts.once.Do(func() {
 		ts.stations, err = ts.tcddClient.LoadAllStations()

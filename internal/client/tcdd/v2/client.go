@@ -33,7 +33,7 @@ func NewTcddHttpClient() *HttpClient {
 	}
 }
 
-func (s *HttpClient) LoadAllStations() ([]response.StationLoadResponse, error) {
+func (s *HttpClient) LoadAllStations() (*[]response.StationLoadResponse, error) {
 
 	httpClientInstance := http.GetHttpClientInstance()
 	httpRequest := http.Request{
@@ -55,7 +55,7 @@ func (s *HttpClient) LoadAllStations() ([]response.StationLoadResponse, error) {
 		return nil, err
 	}
 
-	return stationLoadResponse, nil
+	return &stationLoadResponse, nil
 }
 
 func (s *HttpClient) TrainAvailability(req *request.TrainAvailabilityRequest) (*response.TrainAvailabilityResponse, error) {

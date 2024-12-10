@@ -23,7 +23,7 @@ type TcddServiceV2 struct {
 	tccdClientV2 *v2.HttpClient
 	log          *logrus.Logger
 	once         sync.Once
-	stations     []response.StationLoadResponse
+	stations     *[]response.StationLoadResponse
 }
 
 func NewService() *TcddServiceV2 {
@@ -46,7 +46,7 @@ func (ts *TcddServiceV2) LoadAllStationV2() (*apiModel.StationInformation, error
 	}
 
 	var stationList []apiModel.LoadStationResponse
-	for _, station := range stations {
+	for _, station := range *stations {
 		responseData := apiModel.LoadStationResponse{
 			StationID:         station.Id,
 			StationName:       station.Name,
@@ -292,7 +292,7 @@ func (ts *TcddServiceV2) findStationById(id int64) string {
 		}
 	}
 	stations := ts.stations
-	for _, station := range stations {
+	for _, station := range *stations {
 		if station.Id == id {
 			return station.Name
 		}
@@ -332,7 +332,7 @@ func setClientTrainAvailabilityRequest(request *apiModel.QueryTrainRequest) *req
 	}
 }
 
-func (ts *TcddServiceV2) LoadStationsOnce() ([]response.StationLoadResponse, error) {
+func (ts *TcddServiceV2) LoadStationsOnce() (*[]response.StationLoadResponse, error) {
 	var err error
 	ts.once.Do(func() {
 		ts.stations, err = ts.tccdClientV2.LoadAllStations()
@@ -340,10 +340,10 @@ func (ts *TcddServiceV2) LoadStationsOnce() ([]response.StationLoadResponse, err
 	return ts.stations, err
 }
 
-func getToStationListFromPairId(stations []response.StationLoadResponse, pairs []int64) []apiModel.ToStationList {
+func getToStationListFromPairId(stations *[]response.StationLoadResponse, pairs []int64) []apiModel.ToStationList {
 	var toStationList []apiModel.ToStationList
 	for _, pair := range pairs {
-		for _, station := range stations {
+		for _, station := range *stations {
 			if station.Id == pair {
 				toStationList = append(toStationList, apiModel.ToStationList{
 					ToStationID:   station.Id,
